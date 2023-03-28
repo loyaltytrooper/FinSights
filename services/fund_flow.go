@@ -10,7 +10,7 @@ func GetFundTrail(fileName string, password string) models.TransactionsJSON {
 	// TODO remove password dependency
 	txns, csvData := bank_pdf_parsers.ParseAxisPDF(fileName, password)
 
-	go helpers.CreateCSV(csvData)
+	go helpers.CreateCSV(csvData, fileName[0:len(fileName)-4])
 
 	jsonTxns := helpers.ChangeToJSON(&txns)
 	jsonResult := models.TransactionsJSON{

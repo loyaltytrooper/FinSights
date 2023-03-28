@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-func CreateCSV(csvData map[string][]string) {
+func CreateCSV(csvData map[string][]string, fileName string) {
 	// creating a csv file
-	csvFile, err := os.Create("transactions.csv")
+	csvFile, err := os.Create(fileName + "transactions.csv")
 	if err != nil {
 		fmt.Println(err)
 	}
