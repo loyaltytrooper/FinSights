@@ -8,6 +8,10 @@ import (
 func main() {
 	PORT := os.Getenv("PORT")
 
+	if PORT == "" {
+		PORT = "8080"
+	}
+
 	r := router.RouterInit()
 	err := r.Run(":" + PORT)
 	if err != nil {
