@@ -1,6 +1,9 @@
 package helpers
 
-import "FinSights/models"
+import (
+	"FinSights/models"
+	"fmt"
+)
 
 func AddChildrenRecursively(currentChild *models.TransactionJSON, temp_txns []models.Transaction, i int, parentID string) {
 	if (len(temp_txns)) == i {
@@ -14,7 +17,7 @@ func AddChildrenRecursively(currentChild *models.TransactionJSON, temp_txns []mo
 				TxnType:      (temp_txns)[i].TxnType,
 				TransferMode: (temp_txns)[i].TransferMode,
 				Destination:  (temp_txns)[i].Destination,
-				Difference:   (temp_txns)[i].Difference,
+				Difference:   fmt.Sprintf("%v", (temp_txns)[i].Difference),
 				FinalAmount:  (temp_txns)[i].FinalAmount,
 			},
 		})

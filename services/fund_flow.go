@@ -20,6 +20,9 @@ func GetFundTrail(fileName string, password string) models.TransactionsJSON {
 			X: 0,
 			Y: 10000,
 		},
+		MetaData: models.NodeData{
+			TransferMode: "custom",
+		},
 	}
 	for _, v := range jsonTxns {
 		jsonResult.MetaData.Children = append(jsonResult.MetaData.Children, v)

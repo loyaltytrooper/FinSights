@@ -55,7 +55,7 @@ func ParseCSVFile(fileName string) models.TransactionsJSON {
 	jsonTxns := helpers.ChangeToJSON(&txns)
 	jsonResult := models.TransactionsJSON{
 		Id:   "-1",
-		Name: "Transactions",
+		Name: "custom",
 		Position: models.Position{
 			X: 0,
 			Y: 10000,

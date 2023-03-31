@@ -8,7 +8,7 @@ type TransactionJSON struct {
 
 type NodeData struct {
 	Destination  string            `json:"destination"`
-	Difference   float64           `json:"name"`
+	Difference   string            `json:"difference"`
 	FinalAmount  float64           `json:"final_amount"`
 	TransferMode string            `json:"payment_mode"`
 	Suspicious   bool              `json:"suspicious"`

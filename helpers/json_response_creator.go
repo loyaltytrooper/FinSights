@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"FinSights/models"
+	"fmt"
 	"sort"
 	"strconv"
 )
@@ -25,7 +26,7 @@ func ChangeToJSON(txns *models.TransactionsPDF) map[string]models.TransactionJSO
 					TxnType:      temp_arr[0].TxnType,
 					TransferMode: temp_arr[0].TransferMode,
 					Destination:  temp_arr[0].Destination,
-					Difference:   temp_arr[0].Difference,
+					Difference:   fmt.Sprintf("%v", (temp_arr[0]).Difference),
 					FinalAmount:  temp_arr[0].FinalAmount,
 				},
 			}
