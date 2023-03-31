@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func ParseAxisPDF(fileName string, password string) (models.Transactions, map[string][]string) {
+func ParseAxisPDF(fileName string, password string) (models.TransactionsPDF, map[string][]string) {
 	os.Mkdir("act_"+fileName[0:len(fileName)-4], 0777)
 	err := api.ExtractContentFile(fileName, "act_"+fileName[0:len(fileName)-4], nil, model.NewAESConfiguration(password, password, 128))
 	if err != nil {
@@ -23,7 +23,7 @@ func ParseAxisPDF(fileName string, password string) (models.Transactions, map[st
 	file, err := os.Open("act_" + fileName[0:len(fileName)-4])
 	files, err := file.ReadDir(0)
 
-	var transactions models.Transactions
+	var transactions models.TransactionsPDF
 	csvData := map[string][]string{}
 
 	for _, f := range files {
@@ -34,7 +34,7 @@ func ParseAxisPDF(fileName string, password string) (models.Transactions, map[st
 	return transactions, csvData
 }
 
-func ReadAxisMonthly(file string, transactions *models.Transactions, csvData *map[string][]string) (closingFound bool) {
+func ReadAxisMonthly(file string, transactions *models.TransactionsPDF, csvData *map[string][]string) (closingFound bool) {
 	f, err := os.Open(file)
 	if err != nil {
 		log.Fatal(err)
@@ -96,9 +96,9 @@ func ReadAxisMonthly(file string, transactions *models.Transactions, csvData *ma
 							descriptions := helper.GetDescription(tempData)
 							id, mode, dst := helper.TxnDescription(descriptions)
 							if balance > prevBalance {
-								(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "CREDIT", id, mode, dst, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
+								(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "CREDIT", mode, dst, id, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
 								transactions.Txns = append(transactions.Txns, models.Transaction{
-									Date:         txnTime,
+									Date:         txnTime.Format("02-01-2006"),
 									TxnType:      "CREDIT",
 									TxnId:        id,
 									TransferMode: mode,
@@ -107,9 +107,9 @@ func ReadAxisMonthly(file string, transactions *models.Transactions, csvData *ma
 									FinalAmount:  balance,
 								})
 							} else if balance < prevBalance {
-								(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "DEBIT", id, mode, dst, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
+								(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "DEBIT", mode, dst, id, fmt.Sprintf("%v", -(difference)), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
 								transactions.Txns = append(transactions.Txns, models.Transaction{
-									Date:         txnTime,
+									Date:         txnTime.Format("02-01-2006"),
 									TxnType:      "DEBIT",
 									TxnId:        id,
 									TransferMode: mode,
@@ -142,9 +142,9 @@ func ReadAxisMonthly(file string, transactions *models.Transactions, csvData *ma
 							descriptions := helper.GetDescription(tempData)
 							id, mode, dst := helper.TxnDescription(descriptions)
 							if balance > prevBalance {
-								(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "CREDIT", id, mode, dst, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
+								(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "CREDIT", mode, dst, id, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
 								transactions.Txns = append(transactions.Txns, models.Transaction{
-									Date:         txnTime,
+									Date:         txnTime.Format("02-01-2006"),
 									TxnId:        id,
 									TransferMode: mode,
 									Destination:  dst,
@@ -152,9 +152,9 @@ func ReadAxisMonthly(file string, transactions *models.Transactions, csvData *ma
 									FinalAmount:  balance,
 								})
 							} else if balance < prevBalance {
-								(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "DEBIT", id, mode, dst, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
+								(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "DEBIT", mode, dst, id, fmt.Sprintf("%v", -(difference)), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
 								transactions.Txns = append(transactions.Txns, models.Transaction{
-									Date:         txnTime,
+									Date:         txnTime.Format("02-01-2006"),
 									TxnId:        id,
 									TransferMode: mode,
 									Destination:  dst,
@@ -180,7 +180,7 @@ func ReadAxisMonthly(file string, transactions *models.Transactions, csvData *ma
 	return
 }
 
-func ReadAxisStatement(file string, transactions *models.Transactions, csvData *map[string][]string) (closingFound bool) {
+func ReadAxisStatement(file string, transactions *models.TransactionsPDF, csvData *map[string][]string) (closingFound bool) {
 	f, err := os.Open(file)
 	if err != nil {
 		log.Fatal(err)
@@ -249,7 +249,7 @@ func ReadAxisStatement(file string, transactions *models.Transactions, csvData *
 								if balance > prevBalance {
 									(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "CREDIT", id, mode, dst, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
 									transactions.Txns = append(transactions.Txns, models.Transaction{
-										Date:         txnTime,
+										Date:         txnTime.Format("02-01-2006"),
 										TxnType:      "CREDIT",
 										TxnId:        id,
 										TransferMode: mode,
@@ -260,7 +260,7 @@ func ReadAxisStatement(file string, transactions *models.Transactions, csvData *
 								} else if balance < prevBalance {
 									(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "DEBIT", id, mode, dst, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
 									transactions.Txns = append(transactions.Txns, models.Transaction{
-										Date:         txnTime,
+										Date:         txnTime.Format("02-01-2006"),
 										TxnType:      "DEBIT",
 										TxnId:        id,
 										TransferMode: mode,
@@ -296,7 +296,7 @@ func ReadAxisStatement(file string, transactions *models.Transactions, csvData *
 								if balance > prevBalance {
 									(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "CREDIT", id, mode, dst, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
 									transactions.Txns = append(transactions.Txns, models.Transaction{
-										Date:         txnTime,
+										Date:         txnTime.Format("02-01-2006"),
 										TxnId:        id,
 										TransferMode: mode,
 										Destination:  dst,
@@ -306,7 +306,7 @@ func ReadAxisStatement(file string, transactions *models.Transactions, csvData *
 								} else if balance < prevBalance {
 									(*csvData)[id] = []string{txnTime.Format("02-01-2006"), "DEBIT", id, mode, dst, fmt.Sprintf("%v", difference), fmt.Sprintf("%v", prevBalance), fmt.Sprintf("%v", balance)}
 									transactions.Txns = append(transactions.Txns, models.Transaction{
-										Date:         txnTime,
+										Date:         txnTime.Format("02-01-2006"),
 										TxnId:        id,
 										TransferMode: mode,
 										Destination:  dst,

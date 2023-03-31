@@ -19,7 +19,6 @@ func RouterInit() *gin.Engine {
 			v1 := trailAnalysis.Group("/v1")
 			{
 				v1.POST("/fund_flow", controllers.GetFundFlow)
-				v1.DELETE("/delete_session_files", controllers.DeleteSessionFiles)
 			}
 		}
 	}

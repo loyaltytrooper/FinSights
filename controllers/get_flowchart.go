@@ -4,10 +4,18 @@ import (
 	helpers "FinSights/helpers"
 	"FinSights/models"
 	"FinSights/services"
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
+	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 )
 
 func GetFundFlow(c *gin.Context) {
@@ -30,10 +38,78 @@ func GetFundFlow(c *gin.Context) {
 
 	err := helpers.DownloadFile(fileName, r.FileUrl)
 	if err != nil {
+		response := helpers.CreateResponse(nil, errors.New("Error downloading file"))
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	data := services.GetFundTrail(fileName, r.Password)
+	var data models.TransactionsJSON
+	if fileName[len(fileName)-3:] == "csv" {
+		data = services.ParseCSVFile(fileName)
+		fmt.Println(data)
+		client := &http.Client{
+			Timeout: time.Second * 300,
+		}
+
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+		fw, err := writer.CreateFormFile("file", fileName)
+		if err != nil {
+			fmt.Println(err.Error() + "from Get_flowchart")
+		}
+		file, err := os.Open(fileName)
+		if err != nil {
+			fmt.Println(err.Error() + "from Get_flowchart")
+		}
+		_, err = io.Copy(fw, file)
+		if err != nil {
+			fmt.Println(err.Error() + "from Get_flowchart")
+		}
+		// Close multipart writer.
+		writer.Close()
+		req, err := http.NewRequest("POST", "https://kv-py.onrender.com", bytes.NewReader(body.Bytes()))
+		if err != nil {
+			fmt.Println(err.Error() + "from Get_flowchart")
+		}
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rsp, _ := client.Do(req)
+		if rsp.StatusCode != http.StatusOK {
+			log.Printf("Request failed with response code: %d", rsp.StatusCode)
+		} else {
+			defer rsp.Body.Close()
+
+			var cResp models.ML_Response
+
+			if err := json.NewDecoder(rsp.Body).Decode(&cResp); err != nil {
+				log.Fatal("ooopsss! an error occurred, please try again")
+			}
+			fmt.Println(cResp.Data)
+		}
+
+	} else {
+		data = services.GetFundTrail(fileName, r.Password)
+
+		err = os.RemoveAll("act_" + fileName[0:len(fileName)-4])
+		if err != nil {
+			response := helpers.CreateResponse(nil, errors.New("Error removing directory"))
+			c.JSON(http.StatusInternalServerError, response)
+			return
+		}
+
+		err = os.Remove(fileName[0:(len(fileName)-4)] + "transactions.csv")
+		if err != nil {
+			response := helpers.CreateResponse(nil, errors.New("Error removing csv"))
+			c.JSON(http.StatusInternalServerError, response)
+			return
+		}
+	}
+
+	err = os.Remove(fileName)
+	if err != nil {
+		response := helpers.CreateResponse(nil, errors.New("Error removing "))
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
 
 	//if err != nil {
 	//	response := responsehandler.CreateResponse(nil, err, message)
