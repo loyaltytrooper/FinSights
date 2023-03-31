@@ -12,6 +12,7 @@ type NodeData struct {
 	FinalAmount  float64           `json:"final_amount"`
 	TransferMode string            `json:"payment_mode"`
 	Suspicious   bool              `json:"suspicious"`
+	Score        float64           `json:"score"`
 	Date         string            `json:"txn_time"`
 	TxnType      string            `json:"txn_type"`
 	Children     []TransactionJSON `json:"children"`

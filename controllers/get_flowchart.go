@@ -4,12 +4,19 @@ import (
 	helpers "FinSights/helpers"
 	"FinSights/models"
 	"FinSights/services"
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
+	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func GetFundFlow(c *gin.Context) {
@@ -41,51 +48,53 @@ func GetFundFlow(c *gin.Context) {
 	if fileName[len(fileName)-3:] == "csv" {
 		data = services.ParseCSVFile(fileName)
 		fmt.Println(data)
-		//client := &http.Client{
-		//	Timeout: time.Second * 300,
-		//}
-		//
-		//body := &bytes.Buffer{}
-		//writer := multipart.NewWriter(body)
-		//fw, err := writer.CreateFormFile("file", fileName)
-		//if err != nil {
-		//	fmt.Println(err.Error() + "from Get_flowchart")
-		//}
-		//file, err := os.Open(fileName)
-		//if err != nil {
-		//	fmt.Println(err.Error() + "from Get_flowchart")
-		//}
-		//_, err = io.Copy(fw, file)
-		//if err != nil {
-		//	fmt.Println(err.Error() + "from Get_flowchart")
-		//}
-		//// Close multipart writer.
-		//writer.Close()
-		//req, err := http.NewRequest("POST", "https://kv-py.onrender.com", bytes.NewReader(body.Bytes()))
-		//if err != nil {
-		//	fmt.Println(err.Error() + "from Get_flowchart")
-		//}
-		//req.Header.Set("Content-Type", writer.FormDataContentType())
-		//rsp, _ := client.Do(req)
-		//if rsp.StatusCode != http.StatusOK {
-		//	log.Printf("Request failed with response code: %d", rsp.StatusCode)
-		//} else {
-		//	defer rsp.Body.Close()
-		//
-		//	var cResp models.ML_Response
-		//
-		//	if err := json.NewDecoder(rsp.Body).Decode(&cResp); err != nil {
-		//		log.Fatal("ooopsss! an error occurred, please try again")
-		//	}
-		//	fmt.Println(cResp.Data)
-		//	body := strings.Split(cResp.Data, "/")
-		//	var respBody string
-		//	for _, v := range body {
-		//		respBody += v
-		//	}
-		//	print(respBody)
-		//}
+		client := &http.Client{
+			Timeout: time.Second * 300,
+		}
 
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+		fw, err := writer.CreateFormFile("file", fileName)
+		if err != nil {
+			fmt.Println(err.Error() + "from Get_flowchart")
+		}
+		file, err := os.Open(fileName)
+		if err != nil {
+			fmt.Println(err.Error() + "from Get_flowchart")
+		}
+		_, err = io.Copy(fw, file)
+		if err != nil {
+			fmt.Println(err.Error() + "from Get_flowchart")
+		}
+		// Close multipart writer.
+		writer.Close()
+		req, err := http.NewRequest("POST", "https://kv-py.onrender.com", bytes.NewReader(body.Bytes()))
+		if err != nil {
+			fmt.Println(err.Error() + "from Get_flowchart")
+		}
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rsp, _ := client.Do(req)
+		if rsp.StatusCode != http.StatusOK {
+			log.Printf("Request failed with response code: %d", rsp.StatusCode)
+		} else {
+			defer rsp.Body.Close()
+
+			var cResp models.ML_Response
+
+			if err := json.NewDecoder(rsp.Body).Decode(&cResp); err != nil {
+				log.Fatal("ooopsss! an error occurred, please try again")
+			}
+			fmt.Println(cResp.Data)
+
+			for _, v := range data.MetaData.Children {
+				for _, val := range cResp.Data {
+					if v.TxnId == strconv.Itoa(val.TxnId) {
+						v.MetaData.Suspicious = true
+						v.MetaData.Score = val.Score
+					}
+				}
+			}
+		}
 	} else {
 		data = services.GetFundTrail(fileName, r.Password)
 

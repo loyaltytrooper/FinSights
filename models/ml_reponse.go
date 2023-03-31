@@ -1,13 +1,13 @@
 package models
 
 type ML_Response struct {
-	Data string `json:"data"`
+	Data []MarkedResponse `json:"data"`
 }
 
 type MarkedResponse struct {
-	TxnId      string `json:"trans_id"`
-	Prediction string `json:"pred"`
-	Score      string `json:"score"`
+	TxnId      int     `json:"trans_id"`
+	Prediction int     `json:"pred"`
+	Score      float64 `json:"score"`
 }
 
 //type Markers
