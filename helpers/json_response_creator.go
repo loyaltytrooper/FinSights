@@ -18,21 +18,23 @@ func ChangeToJSON(txns *models.TransactionsPDF) map[string]models.TransactionJSO
 			temp_arr = append(temp_arr, txn)
 		} else {
 			accTxn := models.TransactionJSON{
-				Date:         temp_arr[0].Date,
-				TxnType:      temp_arr[0].TxnType,
-				TxnId:        temp_arr[0].TxnId,
-				ParentId:     strconv.Itoa(-1),
-				TransferMode: temp_arr[0].TransferMode,
-				Destination:  temp_arr[0].Destination,
-				Difference:   temp_arr[0].Difference,
-				FinalAmount:  temp_arr[0].FinalAmount,
+				TxnId:    temp_arr[0].TxnId,
+				ParentId: strconv.Itoa(-1),
+				MetaData: models.NodeData{
+					Date:         temp_arr[0].Date,
+					TxnType:      temp_arr[0].TxnType,
+					TransferMode: temp_arr[0].TransferMode,
+					Destination:  temp_arr[0].Destination,
+					Difference:   temp_arr[0].Difference,
+					FinalAmount:  temp_arr[0].FinalAmount,
+				},
 			}
 			if len(temp_arr) > 1 {
 				AddChildrenRecursively(&accTxn, temp_arr[1:], 0, temp_arr[0].TxnId)
 			}
 			temp_arr = nil
 			temp_arr = append(temp_arr, txn)
-			finalTxns[accTxn.Destination] = accTxn
+			finalTxns[accTxn.MetaData.Destination] = accTxn
 		}
 	}
 	// TODO this has to be done only in case of PDFs
