@@ -56,9 +56,13 @@ func ParseCSVFile(fileName string) models.TransactionsJSON {
 	jsonResult := models.TransactionsJSON{
 		Id:   "-1",
 		Name: "Transactions",
+		Position: models.Position{
+			X: 0,
+			Y: 10000,
+		},
 	}
 	for _, v := range jsonTxns {
-		jsonResult.Txns = append(jsonResult.Txns, v)
+		jsonResult.MetaData.Children = append(jsonResult.MetaData.Children, v)
 	}
 
 	return jsonResult

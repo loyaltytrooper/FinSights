@@ -78,6 +78,12 @@ func GetFundFlow(c *gin.Context) {
 		//		log.Fatal("ooopsss! an error occurred, please try again")
 		//	}
 		//	fmt.Println(cResp.Data)
+		//	body := strings.Split(cResp.Data, "/")
+		//	var respBody string
+		//	for _, v := range body {
+		//		respBody += v
+		//	}
+		//	print(respBody)
 		//}
 
 	} else {

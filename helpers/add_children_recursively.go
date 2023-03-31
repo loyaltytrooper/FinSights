@@ -6,7 +6,7 @@ func AddChildrenRecursively(currentChild *models.TransactionJSON, temp_txns []mo
 	if (len(temp_txns)) == i {
 		return
 	} else {
-		(*currentChild).Children = append((*currentChild).Children, models.TransactionJSON{
+		(*currentChild).MetaData.Children = append((*currentChild).MetaData.Children, models.TransactionJSON{
 			TxnId:    (temp_txns)[i].TxnId,
 			ParentId: parentID,
 			MetaData: models.NodeData{
@@ -18,6 +18,6 @@ func AddChildrenRecursively(currentChild *models.TransactionJSON, temp_txns []mo
 				FinalAmount:  (temp_txns)[i].FinalAmount,
 			},
 		})
-		AddChildrenRecursively(&currentChild.Children[len((*currentChild).Children)-1], temp_txns, i+1, (temp_txns)[i].TxnId)
+		AddChildrenRecursively(&currentChild.MetaData.Children[len((*currentChild).MetaData.Children)-1], temp_txns, i+1, (temp_txns)[i].TxnId)
 	}
 }
